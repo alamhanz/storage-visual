@@ -33,12 +33,11 @@ function createTote(color, storageSize, toteId, storageLocation) {
     return tote;
 }
 
-
-// Raycaster for detecting clicks on totes
+// Raycaster for detecting clicks or touches on totes
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// Function to handle tote click event
+// Function to handle tote click/touch event
 function onToteClick(intersect) {
     const toteData = intersect.object.userData;
     const toteInfoContainer = document.getElementById('toteInfoContainer');
@@ -51,10 +50,17 @@ function onToteClick(intersect) {
     toteInfoContainer.style.display = 'block';
 }
 
-// Function to detect mouse clicks and check for intersections with totes
+// Function to detect mouse clicks or touches and check for intersections with totes
 function onMouseClick(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    if (event.touches) {
+        // For touchscreen, use the first touch point
+        mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+    } else {
+        // For mouse click
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    }
 
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(scene.children);
@@ -69,13 +75,12 @@ function onMouseClick(event) {
         }
     }
 
-    // If no tote was clicked, hide the toteInfoContainer
+    // If no tote was clicked or touched, hide the toteInfoContainer
     if (!toteClicked) {
         const toteInfoContainer = document.getElementById('toteInfoContainer');
         toteInfoContainer.style.display = 'none';
     }
 }
-
 
 // Function to create text labels facing the y-axis
 function createTextLabelFacingYAxis(text, position) {

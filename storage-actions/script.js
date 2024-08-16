@@ -26,7 +26,23 @@ controls.minDistance = 10; // Minimum zoom distance
 controls.maxDistance = 20000; // Maximum zoom distance
 controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation to 90 degrees
 
+// Enable zoom via pinch gesture
+controls.enableZoom = true;
+controls.zoomSpeed = 1.0;  // Adjust zoom sensitivity
+
+// Enable rotation via touch gestures
+controls.enableRotate = true;
+controls.rotateSpeed = 1.0;  // Adjust rotate sensitivity
+
+// Enable panning via two-finger swipe
+controls.enablePan = true;
+controls.panSpeed = 1.0;  // Adjust pan sensitivity
+
 camera.position.set(800, 600, 1200);
+
+if ('ontouchstart' in window) {
+    controls.enablePan = false;
+}
 
 window.storages = {};  // To store storage objects by key
 
@@ -36,8 +52,9 @@ createGridSections(gridSections, gridColumn, gridRows, gridLevel, storageSize, s
 // Load totes from CSV file
 loadTotesFromCSV('assigned_totes.csv');
 
-// Add event listener for mouse clicks
+// Add event listeners for mouse clicks and touch events
 window.addEventListener('click', onMouseClick, false);
+window.addEventListener('touchstart', onMouseClick, false);
 
 // Animation loop
 function animate() {
