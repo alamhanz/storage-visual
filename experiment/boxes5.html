@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Boxes with Interactive Bar Chart</title>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; }
+        #chart-container { width: 80%; height: 300px; margin-top: 20px; }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for the bar chart -->
+    <div id="chart-container">
+        <canvas id="colorBarChart"></canvas>
+    </div>
+
+    <!-- Container for the Three.js scene -->
+    <div id="canvas-container">
+        <div id="three-canvas"></div>
+    </div>
+
+    <!-- Include Chart.js and Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Chart.js setup
+        const ctx = document.getElementById('colorBarChart').getContext('2d');
+        const chartData = {
+            labels: ['Yellow', 'Red', 'Blue', 'Green'],
+            datasets: [{
+                label: 'Number of Boxes',
+                data: [20, 45, 15, 20], // Updated proportions for 100 boxes
+                backgroundColor: ['#FFFF00', '#FF0000', '#0000FF', '#00FF00']
+            }]
+        };
+
+        const colorBarChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const colorToShow = chartData.labels[index].toLowerCase();
+                        showOnlySelectedBoxes(colorToShow);
+                    } else {
+                        showAllBoxes();
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(
+            window.innerWidth / -2,
+            window.innerWidth / 2,
+            window.innerHeight / 2,
+            window.innerHeight / -2,
+            1, 1000
+        );
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('three-canvas').appendChild(renderer.domElement);
+
+        // Create a black background square
+        const squareSize = 500;
+        const blackSquareGeometry = new THREE.PlaneGeometry(squareSize, squareSize);
+        const blackSquareMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const blackSquare = new THREE.Mesh(blackSquareGeometry, blackSquareMaterial);
+        scene.add(blackSquare);
+
+        // Function to create a box
+        function createBox(color, size) {
+            const geometry = new THREE.PlaneGeometry(size, size);
+            const material = new THREE.MeshBasicMaterial({ color });
+            const box = new THREE.Mesh(geometry, material);
+            return box;
+        }
+
+        // Define the colors and the number of boxes
+        const colors = [
+            { color: 0xFFFF00, count: 20, id: 'yellow' },  // Yellow (20%)
+            { color: 0xFF0000, count: 45, id: 'red' },     // Red (45%)
+            { color: 0x0000FF, count: 15, id: 'blue' },    // Blue (15%)
+            { color: 0x00FF00, count: 20, id: 'green' }    // Green (20%)
+        ];
+
+        const boxes = {};
+        const gridSize = 10;
+        const boxSize = squareSize / gridSize;
+
+        // Create and place the boxes in a 10x10 grid
+        let gridIndex = 0;
+        colors.forEach(({ color, count, id }) => {
+            boxes[id] = [];
+            for (let i = 0; i < count; i++) {
+                const box = createBox(color, boxSize);
+                const row = Math.floor(gridIndex / gridSize);
+                const col = gridIndex % gridSize;
+                const x = col * boxSize - squareSize / 2 + boxSize / 2;
+                const y = -row * boxSize + squareSize / 2 - boxSize / 2;
+                box.position.set(x, y, 0);
+                scene.add(box);
+                boxes[id].push(box);
+                gridIndex++;
+            }
+        });
+
+        camera.position.z = 1000;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Function to show only selected color boxes
+        function showOnlySelectedBoxes(colorToShow) {
+            Object.keys(boxes).forEach(color => {
+                boxes[color].forEach(box => {
+                    box.visible = (color === colorToShow);
+                });
+            });
+        }
+
+        // Function to show all boxes
+        function showAllBoxes() {
+            Object.keys(boxes).forEach(color => {
+                boxes[color].forEach(box => {
+                    box.visible = true;
+                });
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+body { 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    font-family: Arial, sans-serif; 
+    padding-top: 10vh;
+}
+
+#top-container { 
+    width: 80%; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+}
+
+#table-container {
+    width: 45%;
+    margin-top: 3vh;
+    max-height: 300px;  /* Set a max height for the table container */
+    overflow-y: auto;  /* Make the table container scrollable */
+}
+
+#table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#table-container th, #table-container td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+#table-container th {
+    background-color: #f2f2f2;
+}
+
+#chart-container {
+    width: 45%;
+    margin-top: 5vh;
+}
+
+#canvas-container {
+    width: 90vw; /* Adjust the width to account for the margins */
+    height: calc(100vh - 60%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 5%;
+    overflow: hidden;
+}
+
+#three-canvas {
+    padding-left: 8vw; /* Padding inside the canvas */
+    padding-right: 8vw; /* Padding inside the canvas */
+    box-sizing: border-box; /* Ensure padding is included in the width/height calculation */
+}

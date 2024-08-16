@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Boxes with Interactive Bar Chart</title>
+    <style>
+        body { 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: Arial, sans-serif; 
+            padding-top: 10vh; /* Padding added here */
+        }
+        #top-container { 
+            width: 80%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; /* Align items at the top */
+        }
+        #table-container, #chart-container {
+            width: 45%;
+        }
+        #table-container {
+            margin-top: 3vh; /* Fine-tuning the alignment */
+        }
+        #table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #table-container th, #table-container td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        #table-container th {
+            background-color: #f2f2f2;
+        }
+        #chart-container {
+            margin-top: 5vh; /* Margin added here */
+        }
+        #canvas-container {
+            width: 100%;
+            height: calc(100vh - 60%); /* Adjust based on screen height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 5%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top container with table and chart side by side -->
+    <div id="top-container">
+        <!-- Table describing the bar chart -->
+        <div id="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Yellow</td>
+                        <td>68</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr>
+                        <td>Red</td>
+                        <td>153</td>
+                        <td>45%</td>
+                    </tr>
+                    <tr>
+                        <td>Blue</td>
+                        <td>51</td>
+                        <td>15%</td>
+                    </tr>
+                    <tr>
+                        <td>Green</td>
+                        <td>68</td>
+                        <td>20%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container for the bar chart -->
+        <div id="chart-container">
+            <canvas id="colorBarChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Container for the Three.js scene -->
+    <div id="canvas-container">
+        <div id="three-canvas"></div>
+    </div>
+
+    <!-- Include Chart.js and Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Chart.js setup for the bar chart
+        const ctx = document.getElementById('colorBarChart').getContext('2d');
+        const chartData = {
+            labels: ['Yellow', 'Red', 'Blue', 'Green'],
+            datasets: [{
+                label: 'Number of Boxes',
+                data: [68, 153, 51, 68], // Updated proportions for 340 boxes
+                backgroundColor: ['#FFFF00', '#FF0000', '#0000FF', '#00FF00']
+            }]
+        };
+
+        const colorBarChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const colorToShow = chartData.labels[index].toLowerCase();
+                        showOnlySelectedBoxes(colorToShow);
+                    } else {
+                        showAllBoxes();
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(
+            window.innerWidth / -2,
+            window.innerWidth / 2,
+            window.innerHeight / 2,
+            window.innerHeight / -2,
+            1, 1000
+        );
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('three-canvas').appendChild(renderer.domElement);
+
+        // Create a black background rectangle
+        const rectangleWidth = 600;
+        const rectangleHeight = 510;
+        const blackRectGeometry = new THREE.PlaneGeometry(rectangleWidth, rectangleHeight);
+        const blackRectMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const blackRect = new THREE.Mesh(blackRectGeometry, blackRectMaterial);
+        scene.add(blackRect);
+
+        // Function to create a box
+        function createBox(color, size) {
+            const geometry = new THREE.PlaneGeometry(size, size);
+            const material = new THREE.MeshBasicMaterial({ color });
+            const box = new THREE.Mesh(geometry, material);
+            return box;
+        }
+
+        // Define the colors and the number of boxes
+        const colors = [
+            { color: 0xFFFF00, count: 68, id: 'yellow' },  // Yellow (20%)
+            { color: 0xFF0000, count: 153, id: 'red' },    // Red (45%)
+            { color: 0x0000FF, count: 51, id: 'blue' },    // Blue (15%)
+            { color: 0x00FF00, count: 68, id: 'green' }    // Green (20%)
+        ];
+
+        // Create a flat array of all colors to shuffle
+        const colorArray = [];
+        colors.forEach(({ color, count }) => {
+            for (let i = 0; i < count; i++) {
+                colorArray.push(color);
+            }
+        });
+
+        // Shuffle the colors randomly
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        shuffle(colorArray);
+
+        const boxes = {};
+        const gridColumns = 20;
+        const gridRows = 17;
+        const boxSize = Math.min(rectangleWidth / gridColumns, rectangleHeight / gridRows) * 0.9; // Small distance between boxes
+        const spacing = boxSize * 0.1;
+
+        // Create and place the boxes in a 20x17 grid with spacing
+        let gridIndex = 0;
+        colorArray.forEach((color, i) => {
+            const row = Math.floor(gridIndex / gridColumns);
+            const col = gridIndex % gridColumns;
+            const x = col * (boxSize + spacing) - rectangleWidth / 2 + boxSize / 2;
+            const y = -row * (boxSize + spacing) + rectangleHeight / 2 - boxSize / 2;
+            const box = createBox(color, boxSize);
+            box.position.set(x, y, 0);
+            scene.add(box);
+
+            // Store boxes in corresponding color group for toggling
+            const colorKey = colors.find(c => c.color === color).id;
+            if (!boxes[colorKey]) {
+                boxes[colorKey] = [];
+            }
+            boxes[colorKey].push(box);
+
+            gridIndex++;
+        });
+
+        camera.position.z = 1000;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Function to show only selected color boxes
+        function showOnlySelectedBoxes(colorToShow) {
+            Object.keys(boxes).forEach(color => {
+                boxes[color].forEach(box => {
+                    box.visible = (color === colorToShow);
+                });
+            });
+        }
+
+        // Function to show all boxes
+        function showAllBoxes() {
+            Object.keys(boxes).forEach(color => {
+                boxes[color].forEach(box => {
+                    box.visible = true;
+                });
+            });
+        }
+
+    </script>
+</body>
+</html>

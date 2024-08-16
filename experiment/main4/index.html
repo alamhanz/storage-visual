@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV to Table with Bar Chart and 3D Boxes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top container with table and chart side by side -->
+    <div id="top-container">
+        <!-- Table describing the bar chart -->
+        <div id="table-container">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Box ID</th>
+                        <th>Color</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container for the bar chart -->
+        <div id="chart-container">
+            <canvas id="colorBarChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Container for the Three.js scene -->
+    <div id="canvas-container">
+        <div id="three-canvas"></div>
+    </div>
+
+    <!-- Include external scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
